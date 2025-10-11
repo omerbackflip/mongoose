@@ -1,0 +1,8 @@
+{
+  "name": "mongoose",
+  "version": "1.0.0",
+  "description": "Reusable backend module for Mongoose CRUD logic",
+  "main": "routes/generic.routes.js",
+  "author": "Omer Backflip",
+  "license": "MIT"
+}
