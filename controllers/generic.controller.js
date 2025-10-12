@@ -1,4 +1,6 @@
-const db = require("../models");
+// const db = require("../models");
+const db = require("../../../models");
+
 const dbService = require("../services/db-service");
 
 //Create and Save a new entity:

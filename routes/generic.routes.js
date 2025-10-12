@@ -1,28 +1,20 @@
-module.exports = app => {
-	const generic = require("../controllers/generic.controller.js");
+const express = require("express");
+const router = express.Router();
+const generic = require("../controllers/generic.controller.js");
 
-	var router = require("express").Router();
+// Create entity
+router.post("/create", generic.create);
 
-	// Create entity
-	router.post("/create", generic.create);
+// Unified get route — works for both findAll and findOne based on query params
+router.get("/entity", generic.getEntities);
 
-	// // Retrieve all entity
-	// router.get("/get-list", generic.findAll);
+// Delete a single entity with id
+router.delete("/delete", generic.delete);
 
-	// // Retrieve a single entity with id
-	// router.get("/get-by-id/:id", generic.findOne);
-	
-	// Unified get route — works for both findAll and findOne based on query params
-	router.get("/entity", generic.getEntities);
+// Update an entity with id
+router.put("/update/:id", generic.update);
 
-	// Delete a single entity with id
-	router.delete("/delete", generic.delete);
+// Delete all entities
+router.delete("/delete-all", generic.deleteAll);
 
-	// Update a entity with id
-	router.put("/update/:id", generic.update);
-
-	// Delete all generic
-	router.delete("/delete-all", generic.deleteAll);
-
-	app.use('/api/generic', router);
-};
+module.exports = router;
