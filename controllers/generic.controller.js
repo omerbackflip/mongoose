@@ -61,20 +61,46 @@ exports.getEntities = async (req, res) => {
 
 
 
-//Update a entity identified by the id in the request:
-exports.update = async (req, res) => {
-	try {
-		const id = req.params.id;
-		const data = await dbService.updateItem(db[req.query.model], {_id: id}, req.body);
-		if(data) {
-			res.send({ message: "entity was updated successfully." });
-		} else {
-			res.status(404).send({message: `Cannot update entity with id=${id}. Maybe entity was not found!`});
-		}
-	} catch (error) {
-		res.status(500).send({ message: "Error updating entity!"});		
-	}
+// //Update a entity identified by the id in the request:
+// exports.update = async (req, res) => {
+// 	try {
+// 		const id = req.params.id;
+// 		const data = await dbService.updateItem(db[req.query.model], {_id: id}, req.body);
+// 		if(data) {
+// 			res.send({ message: "entity was updated successfully." });
+// 		} else {
+// 			res.status(404).send({message: `Cannot update entity with id=${id}. Maybe entity was not found!`});
+// 		}
+// 	} catch (error) {
+// 		res.status(500).send({ message: "Error updating entity!"});		
+// 	}
+// };
+
+// Unified update function
+exports.updateEntity = async (req, res) => {
+  try {
+    const { filter, data } = req.body;
+    const { model, ...options } = req.query; // options = { upsert: true, etc. }
+
+    if (!model) return res.status(400).send({ message: "Missing 'model' parameter" });
+    if (!filter || typeof filter !== "object") {
+      return res.status(400).send({ message: "Missing or invalid 'filter' in body" });
+    }
+
+    const result = await dbService.updateItem(db[model], filter, data, options);
+
+    if (!result) {
+      return res.status(404).send({ message: "Entity not found" });
+    }
+
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Error updating entity!", error: error.message });
+  }
 };
+
+
 
 //Delete a entity with the specified id:
 exports.delete = async (req, res) => {
