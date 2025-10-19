@@ -6,7 +6,7 @@ exports.getEntities = async ({ model, filter }) => {
 	const data = await model.find(filter).lean();
 
 	// אם יש רק רשומה אחת — החזר אותה כאובייקט
-	if (data.length === 1) return data[0];
+	// if (data.length === 1) return data[0];
 	return data;
 };
 
