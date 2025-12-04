@@ -41,21 +41,88 @@ exports.create = async (req, res) => {
 
 
 exports.getEntities = async (req, res) => {
-	try {
-		const { model, ...filter } = req.query;
-		if (!model) return res.status(400).send({ message: "Missing 'model' parameter" });
+  try {
+    const {
+      model: modelName,
+      filter: filterStr,
+      _sort,
+      _limit,
+      _skip,
+      _select,
+      _populate,
+      _lean,
+      ...restQuery
+    } = req.query;
 
-		const result = await dbService.getEntities({ model: db[model], filter });
+    if (!modelName) {
+      return res.status(400).send({ message: "Missing 'model' parameter" });
+    }
 
-		if (!result || (Array.isArray(result) && result.length === 0)) {
-			return res.status(404).send({ message: "No results found" });
-		}
+    // 1. filter – תמיכה גם ב-JSON וגם בפורמט הישן (key=value)
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = JSON.parse(filterStr);
+      } catch (e) {
+        console.error("Invalid JSON in 'filter':", filterStr);
+        filter = {};
+      }
+    } else {
+      // תאימות מלאה ל־Book/Diary: כל מה שנשאר ב־query משמש כ־filter
+      filter = restQuery;
+    }
 
-		res.send(result);
-	} catch (error) {
-		console.error(error);
-		res.status(500).send({ message: "Error retrieving data", error: error.message });
-	}
+    // 2. options
+    const options = {};
+
+    if (_sort) {
+      try {
+        options.sort = JSON.parse(_sort);
+      } catch (e) {
+        console.error("Invalid JSON in '_sort':", _sort);
+      }
+    }
+
+    if (typeof _limit !== "undefined") {
+      options.limit = Number(_limit);
+    }
+
+    if (typeof _skip !== "undefined") {
+      options.skip = Number(_skip);
+    }
+
+    if (_select) {
+      options.select = _select;
+    }
+
+    if (_populate) {
+      try {
+        options.populate = JSON.parse(_populate);
+      } catch (e) {
+        // אם נשלח string פשוט (כמו "customer") – נשתמש בו ישירות
+        options.populate = _populate;
+      }
+    }
+
+    if (typeof _lean !== "undefined") {
+      options.lean = _lean !== "false";
+    }
+
+    const result = await dbService.getEntities({
+      model: db[modelName],
+      filter,
+      options,
+    });
+
+    if (!result || (Array.isArray(result) && result.length === 0)) {
+      return res.status(404).send({ message: "No results found" });
+    }
+
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Error retrieving data", error: error.message });
+  }
 };
 
 

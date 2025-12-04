@@ -1,13 +1,44 @@
+// db-service.js
 
-exports.getEntities = async ({ model, filter }) => {
-	if (!model) throw new Error("Model is required");
+exports.getEntities = async ({ model, filter = {}, options = {} }) => {
+  if (!model) throw new Error("Model is required");
 
-	// הפעלת lean לשיפור ביצועים
-	const data = await model.find(filter).lean();
+  const {sort, limit, skip, select, populate, lean = true} = options; // default lean to true
 
-	// אם יש רק רשומה אחת — החזר אותה כאובייקט
-	// if (data.length === 1) return data[0];
-	return data;
+  let query = model.find(filter);
+
+  if (sort) {
+    query = query.sort(sort);
+  }
+
+  if (typeof limit !== "undefined") {
+    query = query.limit(Number(limit));
+  }
+
+  if (typeof skip !== "undefined") {
+    query = query.skip(Number(skip));
+  }
+
+  if (select) {
+    query = query.select(select);
+  }
+
+  if (populate) {
+    if (Array.isArray(populate)) {
+      populate.forEach((p) => {
+        query = query.populate(p);
+      });
+    } else {
+      query = query.populate(populate);
+    }
+  }
+
+  if (lean) {
+    query = query.lean();
+  }
+
+  const data = await query.exec();
+  return data;
 };
 
 exports.updateItem = async (model, query, payload, options = {}) => {
