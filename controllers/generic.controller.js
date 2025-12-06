@@ -114,9 +114,10 @@ exports.getEntities = async (req, res) => {
       options,
     });
 
-    if (!result || (Array.isArray(result) && result.length === 0)) {
-      return res.status(404).send({ message: "No results found" });
-    }
+    // 3.  ביטול הטיפול במקרה של לא נמצאו תוצאות
+    // if (!result || (Array.isArray(result) && result.length === 0)) {
+    //   return res.status(404).send({ message: "No results found" });
+    // }
 
     res.send(result);
   } catch (error) {
